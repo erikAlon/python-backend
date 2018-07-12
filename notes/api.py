@@ -1,6 +1,8 @@
 from rest_framework import serializers, viewsets
 from .models import Notes, PersonalNotes
 
+# TODO: Make All notes queryset visible to admin only
+
 
 class NotesSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
@@ -30,4 +32,12 @@ class PersonalNotesSerializer(serializers.HyperlinkedModelSerializer):
 
 class PersonalNotesViewset(viewsets.ModelViewSet):
     serializer_class = PersonalNotesSerializer
-    queryset = PersonalNotes.objects.all()
+    queryset = PersonalNotes.objects.none()
+
+    def get_queryset(self):
+        user = self.request.user
+
+        if user.is_anonymous:
+            return PersonalNotes.objects.none()
+        else:
+            return PersonalNotes.objects.filter(user=user)
